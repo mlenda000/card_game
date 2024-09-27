@@ -19,6 +19,7 @@ class CardBack extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4.0),
         color: const Color.fromARGB(255, 89, 33, 243),
+        border: Border.all(color: Colors.black), 
       ),
       child: child ?? Container(),
       
