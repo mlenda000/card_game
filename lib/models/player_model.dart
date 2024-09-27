@@ -15,7 +15,7 @@ class PlayerModel {
       cards = [...cards, ...newCards];
     }
 
-    removeCards(CardModel card){
+    removeCard(CardModel card){
       cards.removeWhere((c) => c.value == card.value && c.suit == card.suit);
     }
 

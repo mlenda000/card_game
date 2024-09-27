@@ -21,7 +21,12 @@ class CardList extends StatelessWidget {
           itemCount: player.cards.length,
           itemBuilder: (context, index) {
             final card = player.cards[index];
-            return PlayingCard(card: card , size: size, visible: true,);
+            return PlayingCard(
+              card: card,
+              size: size,
+              visible: player.isHuman,
+              onPlayCard: onPlayCard,
+            );
           },
         ));
   }
