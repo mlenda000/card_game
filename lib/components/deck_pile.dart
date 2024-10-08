@@ -16,11 +16,22 @@ class DeckPile extends StatelessWidget {
   Widget build(BuildContext context) {
     return CardBack(
       size: size,
-      child: Center(
-          child: Text(
-        "$remaining",
-        style: TextStyle(color: Colors.white),
-      )),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration:
+                BoxDecoration(shape: BoxShape.circle, color: Colors.black),
+          ),
+          Center(
+              child: Text(
+            "$remaining",
+            style: TextStyle(color: Colors.white),
+          ))
+        ],
+      ),
     );
   }
 }

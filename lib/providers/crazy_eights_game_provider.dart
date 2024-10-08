@@ -16,6 +16,9 @@ class CrazyEightsGameProvider extends GameProvider {
     await drawCardToDiscardPile();
 
     setLastPlayed(discardTop!);
+
+    turn.drawCount = 0;
+    turn.actionCount = 0;
   }
 
   @override
@@ -43,6 +46,21 @@ class CrazyEightsGameProvider extends GameProvider {
     if (turn.drawCount > 0 || turn.actionCount > 0) return true;
 
     return false;
+  }
+
+  @override
+  bool get gameIsOver {
+    if (turn.currentPlayer.cards.isEmpty) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void finishGame() {
+    showToast("Game over! ${turn.currentPlayer.name} WINS!");
+
+    notifyListeners();
   }
 
   @override

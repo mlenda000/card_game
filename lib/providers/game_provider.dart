@@ -7,6 +7,13 @@ import 'package:card_game/models/turn_model.dart';
 import 'package:card_game/services/deck_service.dart';
 import 'package:flutter/material.dart';
 
+
+class ActionButton{
+  final String label;
+  final Function() onPressed;
+
+  ActionButton({required this.label, required this.onPressed});
+}
 abstract class GameProvider with ChangeNotifier {
   GameProvider() {
     _service = DeckService();
@@ -57,6 +64,10 @@ abstract class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  bool get showTrump {
+    return true;
+  }
+
   void setTrump(Suit suit) {
     setBottomWidget(Padding(
       padding: const EdgeInsets.all(4.0),
@@ -105,6 +116,8 @@ abstract class GameProvider with ChangeNotifier {
   }
 
   bool canPlayCard(CardModel card) {
+    if(gameIsOver) return false;
+
     return _turn.actionCount < 1;
   }
 
@@ -120,6 +133,32 @@ abstract class GameProvider with ChangeNotifier {
 
     setLastPlayed(card);
     await applyCardSideEffects(card);
+
+    if(gameIsOver){
+      finishGame();
+    }
+
+    notifyListeners();
+  }
+
+  bool canDrawCardFromDiscardPile({int count = 1}){
+    if(!canDrawCard) return false;
+
+    return discards.length >= count;
+  }
+
+  void drawCardsFromDiscard(PlayerModel player, {int count = 1}){
+    if(!canDrawCardFromDiscardPile(count: count)){
+      return;
+    }
+    final start = discards.length - count;
+    final end = discards.length;
+
+    final cards = discards.getRange(start, end).toList();
+    discards.removeRange(start, end);
+
+    player.addCards(cards);
+    turn.drawCount += count;
 
     notifyListeners();
   }
@@ -142,6 +181,16 @@ abstract class GameProvider with ChangeNotifier {
   void skipTurn() {
     _turn.nextTurn();
     _turn.nextTurn();
+
+    notifyListeners();
+  }
+
+  bool get gameIsOver {
+    return currentDeck!.remaining < 1;
+  }
+
+  void finishGame(){
+    showToast("Game over");
 
     notifyListeners();
   }

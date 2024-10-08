@@ -1,6 +1,8 @@
 import 'package:card_game/components/game_board.dart';
 import 'package:card_game/models/player_model.dart';
 import 'package:card_game/providers/crazy_eights_game_provider.dart';
+import 'package:card_game/providers/game_provider.dart';
+import 'package:card_game/providers/thirty_one_game_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,13 +13,18 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-late final CrazyEightsGameProvider _gameProvider;
-
 class _GameScreenState extends State<GameScreen> {
+  String? _selectedGame;
+
+  final List<String> _gameOptions = [
+    "Crazy Eights",
+    "Thirty One",
+  ];
+
   @override
   void initState() {
-    _gameProvider = Provider.of<CrazyEightsGameProvider>(context, listen: false);
     super.initState();
+    _selectedGame = _gameOptions[0]; // Default to Crazy Eights
   }
 
   @override
@@ -26,16 +33,45 @@ class _GameScreenState extends State<GameScreen> {
       appBar: AppBar(
         backgroundColor: Colors.blueGrey[800],
         foregroundColor: Colors.white,
-        title: const Text("Crazy Eights"),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: const Text("Get ready to play!"),
+        ),
         actions: [
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            child: DropdownButton<String>(
+              dropdownColor: Colors.blueGrey[800],
+              style: const TextStyle(color: Colors.white),
+              value: _selectedGame,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedGame = newValue;
+                });
+              },
+              items: _gameOptions.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 4, bottom: 4, left: 12, right: 12),
+                    child: Text(value),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
           TextButton(
             onPressed: () async {
               final players = [
                 PlayerModel(name: "Mark", isHuman: true),
-                PlayerModel(name: "Bot", isHuman: false)
+                PlayerModel(name: "Bot", isHuman: false),
               ];
-
-              await _gameProvider.newGame(players);
+              if (_selectedGame == "Crazy Eights") {
+                await Provider.of<CrazyEightsGameProvider>(context, listen: false).newGame(players);
+              } else {
+                await Provider.of<ThirtyOneGameProvider>(context, listen: false).newGame(players);
+              }
             },
             child: const Text(
               "New game",
@@ -44,7 +80,18 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
-      body: const GameBoard(),
+      body: Builder(
+        builder: (context) {
+          // Decide which provider to use based on selected game
+          GameProvider model;
+          if (_selectedGame == "Crazy Eights") {
+            model = Provider.of<CrazyEightsGameProvider>(context);
+          } else {
+            model = Provider.of<ThirtyOneGameProvider>(context);
+          }
+          return GameBoard(provider: model);
+        },
+      ),
     );
   }
 }
