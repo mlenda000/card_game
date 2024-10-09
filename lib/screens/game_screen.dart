@@ -59,12 +59,10 @@ class _GameScreenState extends State<GameScreen> {
                   onChanged: (String? newValue) {
                     setStateSB(() {
                       selectedGame = newValue;
+                    });
+                    setState(() {
                       _selectedGame = newValue;
                     });
-                    // setState(() {
-                    //   selectedGame = newValue;
-                    //   _selectedGame = newValue;
-                    // });
                   },
                   items: _gameOptions
                       .map<DropdownMenuItem<String>>((String value) {
