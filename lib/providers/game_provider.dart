@@ -7,13 +7,15 @@ import 'package:card_game/models/turn_model.dart';
 import 'package:card_game/services/deck_service.dart';
 import 'package:flutter/material.dart';
 
-
-class ActionButton{
+class ActionButton {
   final String label;
+  final bool enabled;
   final Function() onPressed;
 
-  ActionButton({required this.label, required this.onPressed});
+  ActionButton(
+      {required this.label, required this.onPressed, this.enabled = true});
 }
+
 abstract class GameProvider with ChangeNotifier {
   GameProvider() {
     _service = DeckService();
@@ -36,7 +38,7 @@ abstract class GameProvider with ChangeNotifier {
   Map<String, dynamic> gameState = {};
   Widget? buttonWidget;
 
-  List<Widget> additionalButtons = [];
+  List<ActionButton> additionalButtons = [];
 
   Future<void> newGame(List<PlayerModel> players) async {
     final deck = await _service.newDeck();
@@ -116,7 +118,7 @@ abstract class GameProvider with ChangeNotifier {
   }
 
   bool canPlayCard(CardModel card) {
-    if(gameIsOver) return false;
+    if (gameIsOver) return false;
 
     return _turn.actionCount < 1;
   }
@@ -134,21 +136,21 @@ abstract class GameProvider with ChangeNotifier {
     setLastPlayed(card);
     await applyCardSideEffects(card);
 
-    if(gameIsOver){
+    if (gameIsOver) {
       finishGame();
     }
 
     notifyListeners();
   }
 
-  bool canDrawCardFromDiscardPile({int count = 1}){
-    if(!canDrawCard) return false;
+  bool canDrawCardFromDiscardPile({int count = 1}) {
+    if (!canDrawCard) return false;
 
     return discards.length >= count;
   }
 
-  void drawCardsFromDiscard(PlayerModel player, {int count = 1}){
-    if(!canDrawCardFromDiscardPile(count: count)){
+  void drawCardsFromDiscard(PlayerModel player, {int count = 1}) {
+    if (!canDrawCardFromDiscardPile(count: count)) {
       return;
     }
     final start = discards.length - count;
@@ -189,7 +191,7 @@ abstract class GameProvider with ChangeNotifier {
     return currentDeck!.remaining < 1;
   }
 
-  void finishGame(){
+  void finishGame() {
     showToast("Game over");
 
     notifyListeners();
@@ -219,5 +221,4 @@ abstract class GameProvider with ChangeNotifier {
       ),
     );
   }
-
 }

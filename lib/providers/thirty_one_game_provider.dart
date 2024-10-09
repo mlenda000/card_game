@@ -1,9 +1,8 @@
-import 'package:card_game/components/suit_chooser_modal.dart';
-import 'package:card_game/constants.dart';
-import 'package:card_game/main.dart';
+import 'dart:math';
 import 'package:card_game/models/card_model.dart';
 import 'package:card_game/providers/game_provider.dart';
-import 'package:flutter/material.dart';
+
+const GS_PLAYER_HAS_KNOCKED = "GS_PLAYER_HAS_KNOCKED";
 
 class ThirtyOneGameProvider extends GameProvider {
   @override
@@ -19,7 +18,19 @@ class ThirtyOneGameProvider extends GameProvider {
     turn.actionCount = 0;
   }
 
-  
+  @override
+  List<ActionButton> get additionalButtons {
+    return ([
+      ActionButton(
+          label: "Knock",
+          onPressed: () {
+            gameState[GS_PLAYER_HAS_KNOCKED] = turn.currentPlayer;
+
+            endTurn();
+          })
+    ]);
+  }
+
   @override
   bool get canEndTurn {
     return turn.drawCount == 1 && turn.actionCount == 1;
@@ -42,15 +53,64 @@ class ThirtyOneGameProvider extends GameProvider {
 
   @override
   bool get gameIsOver {
-    
+    if (gameState[GS_PLAYER_HAS_KNOCKED] != null &&
+        gameState[GS_PLAYER_HAS_KNOCKED] == turn.currentPlayer) {
+      return true;
+    }
     return false;
   }
 
   @override
   void finishGame() {
-    showToast("Game over! ${turn.currentPlayer.name} WINS!");
+    for (final p in players) {
+      int diamondPoints = 0;
+      int spadePoints = 0;
+      int clubsPoints = 0;
+      int heartsPoints = 0;
+      for (final c in p.cards) {
+        int points = 0;
 
-    notifyListeners();
+        switch (c.value) {
+          case "KING":
+          case "QUEEN":
+          case "JACK":
+            points += 10;
+            break;
+          case "ACE":
+            points += 11;
+            break;
+          default:
+            points += int.parse(c.value);
+        }
+        switch (c.suit) {
+          case Suit.Clubs:
+            clubsPoints += points;
+            break;
+          case Suit.Diamonds:
+            diamondPoints += points;
+            break;
+          case Suit.Hearts:
+            heartsPoints += points;
+            break;
+          case Suit.Spades:
+            spadePoints += points;
+          default:
+            break;
+        }
+      }
+      final totalPoints = [
+        spadePoints,
+        heartsPoints,
+        clubsPoints,
+        diamondPoints
+      ].fold(spadePoints, max);
+
+      p.score = totalPoints;
+      print(p.score);
+      showToast("Game over! ${p.name} WINS!");
+
+      notifyListeners();
+    }
   }
 
   @override
@@ -74,6 +134,4 @@ class ThirtyOneGameProvider extends GameProvider {
     }
     endTurn();
   }
-
- 
 }

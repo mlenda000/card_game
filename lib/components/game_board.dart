@@ -51,7 +51,8 @@ class GameBoard extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            if (provider.buttonWidget != null && provider.showTrump)
+                            if (provider.buttonWidget != null &&
+                                provider.showTrump)
                               provider.buttonWidget!,
                           ],
                         ),
@@ -74,22 +75,28 @@ class GameBoard extends StatelessWidget {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                ...provider.additionalButtons,
-                                if (provider.turn.currentPlayer ==
+                            child: (provider.turn.currentPlayer ==
                                     provider.players[0])
-                                  ElevatedButton(
-                                    onPressed: provider.canEndTurn
-                                        ? () {
-                                            provider.endTurn();
-                                          }
-                                        : null,
-                                    child: const Text("End Turn"),
-                                  ),
-                              ],
-                            ),
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      ...provider.additionalButtons.map(
+                                          (button) => ElevatedButton(
+                                              onPressed: button.enabled
+                                                  ? button.onPressed
+                                                  : null,
+                                              child: Text(button.label))),
+                                      ElevatedButton(
+                                        onPressed: provider.canEndTurn
+                                            ? () {
+                                                provider.endTurn();
+                                              }
+                                            : null,
+                                        child: const Text("End Turn"),
+                                      ),
+                                    ],
+                                  )
+                                : null,
                           ),
                           Padding(
                             padding: const EdgeInsets.only(
@@ -111,16 +118,7 @@ class GameBoard extends StatelessWidget {
             ],
           )
         : Center(
-            child: TextButton(
-              child: const Text("New Game"),
-              onPressed: () {
-                final players = [
-                  PlayerModel(name: "Mark", isHuman: true),
-                  PlayerModel(name: "Bot", isHuman: false)
-                ];
-                provider.newGame(players);
-              },
-            ),
+            child: const Text("To start a new game, Click New Game"),
           );
   }
 }

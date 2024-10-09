@@ -27,6 +27,90 @@ class _GameScreenState extends State<GameScreen> {
     _selectedGame = _gameOptions[0]; // Default to Crazy Eights
   }
 
+  void _startNewGame(player1, selectedGame) async {
+    final players = [
+      PlayerModel(name: player1, isHuman: true),
+      PlayerModel(name: "Bot", isHuman: false),
+    ];
+    if (selectedGame == "Crazy Eights") {
+      await Provider.of<CrazyEightsGameProvider>(context, listen: false)
+          .newGame(players);
+    } else {
+      await Provider.of<ThirtyOneGameProvider>(context, listen: false)
+          .newGame(players);
+    }
+  }
+
+  void _showNewGameDialog() {
+    String? playerName = '';
+    String? selectedGame = _selectedGame;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateSB) => AlertDialog(
+            title: const Text("Start a New Game"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButton<String>(
+                  value: selectedGame,
+                  onChanged: (String? newValue) {
+                    setStateSB(() {
+                      selectedGame = newValue;
+                      _selectedGame = newValue;
+                    });
+                    // setState(() {
+                    //   selectedGame = newValue;
+                    //   _selectedGame = newValue;
+                    // });
+                  },
+                  items: _gameOptions
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            top: 4, bottom: 4, left: 12, right: 12),
+                        child: Text(value),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'Player 1 Name',
+                  ),
+                  onChanged: (value) {
+                    playerName = value;
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  if (playerName != null && playerName!.isNotEmpty) {
+                    Navigator.of(context).pop();
+                    _startNewGame(playerName!, _selectedGame!);
+                  }
+                },
+                child: const Text("Start Game"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("Cancel"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,40 +122,10 @@ class _GameScreenState extends State<GameScreen> {
           child: const Text("Get ready to play!"),
         ),
         actions: [
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            child: DropdownButton<String>(
-              dropdownColor: Colors.blueGrey[800],
-              style: const TextStyle(color: Colors.white),
-              value: _selectedGame,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedGame = newValue;
-                });
-              },
-              items: _gameOptions.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        top: 4, bottom: 4, left: 12, right: 12),
-                    child: Text(value),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
+        
           TextButton(
             onPressed: () async {
-              final players = [
-                PlayerModel(name: "Mark", isHuman: true),
-                PlayerModel(name: "Bot", isHuman: false),
-              ];
-              if (_selectedGame == "Crazy Eights") {
-                await Provider.of<CrazyEightsGameProvider>(context, listen: false).newGame(players);
-              } else {
-                await Provider.of<ThirtyOneGameProvider>(context, listen: false).newGame(players);
-              }
+              _showNewGameDialog();
             },
             child: const Text(
               "New game",
